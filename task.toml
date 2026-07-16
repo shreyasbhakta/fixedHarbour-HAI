@@ -1,0 +1,32 @@
+artifacts = ["/app/report.json"]
+
+[task]
+name = "dynamo/log-report"
+description = "Parse an Apache-style access log into a small JSON summary report."
+
+[metadata]
+category = "data_processing_and_etl"
+subcategory = "text_processing"
+task_objective = ["transform", "generate"]
+artifact_type = ["text_or_log_file", "generated_output_artifact"]
+expert_time_estimate_hours = 0.3
+model_tested = "GPT-5.4"
+agent_tested = "Terminus-2"
+difficulty_explanation = "Parse a small (single-digit-line) common-log-format access log and emit total request count, unique client count, and the single most-requested path. No tricky edge cases; the main difficulty is matching the required JSON schema and key names exactly."
+solution_explanation = "Read /app/access.log line by line; count non-blank lines as total_requests; collect the first whitespace-delimited token of each line into a set for unique_ips; extract the request path from the quoted request line via a regex on the HTTP method and tally with a Counter to find top_path (ties broken by first appearance). Write the three fields to /app/report.json."
+verification_explanation = "tests/test_outputs.py loads /app/report.json and independently recomputes total_requests, unique_ips, and top_path directly from /app/access.log, then asserts the report's values match exactly (and that no extra/missing keys are present)."
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 120.0
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
